@@ -138,7 +138,14 @@ function isAllowedUrl(url) {
     try {
         const parsedUrl = new URL(url); // Parse the URL to check if it's valid
         const allowedDomains = config.allowedDomains;
-        return allowedDomains.includes(parsedUrl.hostname);
+        const isAllowed = allowedDomains.includes(parsedUrl.hostname);
+
+        // Allow URLs that start with 'www.' to pass through
+        if (parsedUrl.hostname.startsWith('www.')) {
+            return true; // Ignore the restriction
+        }
+
+        return isAllowed;
     } catch (e) {
         console.error(`Invalid URL: ${url}`, e); // Log the error for debugging
         return false; // If the URL is invalid, return false
