@@ -175,14 +175,14 @@ app.whenReady().then(() => {
     app.setAsDefaultProtocolClient('jgdesktop');
 
     const urlFromArgs = process.argv.find(arg => arg.startsWith('jgdesktop://'));
-    const urlToLoad = urlFromArgs ? urlFromArgs.replace('jgdesktop://', config.url) : config.url;
+    const urlToLoad = urlFromArgs ? decodeURIComponent(urlFromArgs.replace('jgdesktop://', '')) : config.url;
     createWindow(urlToLoad);
 });
 
 // Handle deep linking when app is already running
 app.on('second-instance', (event, argv) => {
     const urlFromArgs = argv.find(arg => arg.startsWith('jgdesktop://'));
-    const urlToLoad = urlFromArgs ? urlFromArgs.replace('jgdesktop://', config.url) : config.url;
+    const urlToLoad = urlFromArgs ? decodeURIComponent(urlFromArgs.replace('jgdesktop://', '')) : config.url;
 
     if (mainWindow) {
         loadUrlInWindow(mainWindow, urlToLoad);
