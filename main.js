@@ -6,14 +6,12 @@ let mainWindow;
 
 // Function to create the main application window
 function createWindow(url = 'https://jublaglattbrugg.ch') {
-    // If the window exists, focus and load the new URL
     if (mainWindow) {
         mainWindow.focus();
         loadUrlInWindow(mainWindow, url);
         return;
     }
 
-    // Create the BrowserWindow
     mainWindow = new BrowserWindow({
         width: 1200,
         height: 800,
@@ -24,10 +22,8 @@ function createWindow(url = 'https://jublaglattbrugg.ch') {
         },
     });
 
-    // Load the allowed URL and display loader
     loadUrlInWindow(mainWindow, url);
 
-    // Handle window closed event
     mainWindow.on('closed', () => {
         mainWindow = null;
     });
@@ -44,12 +40,13 @@ function loadUrlInWindow(window, url) {
         <div class="loader"></div>
     `;
 
-    // Show loader until the page is ready
     window.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(loaderHtml)}`, { baseURLForDataURL: '' });
     
     window.webContents.once('did-finish-load', () => {
         if (isAllowedUrl(url)) {
             window.loadURL(url);
+        } else {
+            showUrlNotAllowedDialog(url);
         }
     });
 }
@@ -61,11 +58,24 @@ function isAllowedUrl(url) {
     return allowedDomains.includes(parsedUrl.hostname);
 }
 
+// Show dialog when URL is not allowed
+function showUrlNotAllowedDialog(url) {
+    dialog.showMessageBox(mainWindow, {
+        type: 'Warnung',
+        title: 'URL nicht erlaubt',
+        message: `Die Seite "${url}" kann nicht in der Desktop App geöffnet werden.`,
+        buttons: ['In Browser öffnen', 'Abbrechen']
+    }).then(result => {
+        if (result.response === 0) { // If the user clicked 'Open in Browser'
+            shell.openExternal(url);
+        }
+    });
+}
+
 // Ensure single instance of the app
 app.whenReady().then(() => {
     app.setAsDefaultProtocolClient('jgdesktop');
 
-    // Check for the protocol URL
     const urlFromArgs = process.argv.find(arg => arg.startsWith('jgdesktop://'));
     const urlToLoad = urlFromArgs ? urlFromArgs.replace('jgdesktop://', 'https://') : 'https://jublaglattbrugg.ch';
     createWindow(urlToLoad);
