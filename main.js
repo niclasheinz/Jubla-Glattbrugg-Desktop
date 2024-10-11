@@ -1,18 +1,15 @@
-const { app, BrowserWindow, Menu, shell, dialog } = require('electron');
+const { app, BrowserWindow, shell, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
+// Load configuration from config.json
+const configPath = path.join(__dirname, 'config.json');
+const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+
 let mainWindow;
 
-// Load URLs from config.json
-const configPath = path.join(__dirname, 'config.json');
-const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-const allowedUrls = config.allowedUrls; 
-const url = config.url;
-const mehrErfahrenUrl = config.mehrErfahrenUrl;
-
 // Function to create the main application window
-function createWindow(url = url) {
+function createWindow(url = config.baseUrl) {
     if (mainWindow) {
         mainWindow.focus();
         loadUrlInWindow(mainWindow, url);
@@ -26,7 +23,7 @@ function createWindow(url = url) {
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
-            devTools: false // Disable developer tools
+            devTools: false // Ensure developer tools are disabled
         },
     });
 
@@ -35,8 +32,6 @@ function createWindow(url = url) {
     mainWindow.on('closed', () => {
         mainWindow = null;
     });
-
-    createMenu();
 }
 
 // Function to load a URL into the window with a loader
@@ -50,7 +45,7 @@ function loadUrlInWindow(window, url) {
         <div class="loader"></div>
     `;
 
-    window.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(loaderHtml)}`, { urlForDataURL: '' });
+    window.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(loaderHtml)}`, { baseURLForDataURL: '' });
     
     window.webContents.once('did-finish-load', () => {
         if (isAllowedUrl(url)) {
@@ -63,8 +58,9 @@ function loadUrlInWindow(window, url) {
 
 // Check if the URL is allowed
 function isAllowedUrl(url) {
+    const allowedDomains = config.allowedDomains;
     const parsedUrl = new URL(url);
-    return allowedUrls.includes(parsedUrl.hostname);
+    return allowedDomains.includes(parsedUrl.hostname);
 }
 
 // Show dialog when URL is not allowed
@@ -73,67 +69,15 @@ function showUrlNotAllowedDialog(url) {
         type: 'warning',
         title: 'URL nicht erlaubt',
         message: `Die Seite "${url}" kann nicht in der Desktop App geöffnet werden.`,
-        buttons: ['In Browser öffnen', 'Abbrechen']
+        buttons: ['In Browser öffnen', 'Zurück zur Startseite']
     }).then(result => {
-        if (result.response === 0) { // If the user clicked 'Open in Browser'
+        if (result.response === 0) { // 'In Browser öffnen'
             shell.openExternal(url);
+            mainWindow.close(); // Close the window after opening the URL in the browser
+        } else { // 'Zurück zur Startseite'
+            loadUrlInWindow(mainWindow, config.baseUrl);
         }
     });
-}
-
-// Create the German menu for the application
-function createMenu() {
-    const menuTemplate = [
-        {
-            label: 'Datei',
-            submenu: [
-                {
-                    label: 'Beenden',
-                    click: () => { app.quit(); }
-                }
-            ]
-        },
-        {
-            label: 'Bearbeiten',
-            submenu: [
-                { label: 'Rückgängig', role: 'undo' },
-                { label: 'Wiederholen', role: 'redo' },
-                { type: 'separator' },
-                { label: 'Ausschneiden', role: 'cut' },
-                { label: 'Kopieren', role: 'copy' },
-                { label: 'Einfügen', role: 'paste' },
-                { label: 'Alles auswählen', role: 'selectAll' }
-            ]
-        },
-        {
-            label: 'Ansicht',
-            submenu: [
-                { label: 'Neu laden', role: 'reload' },
-                { label: 'Vollbild', role: 'togglefullscreen' }
-            ]
-        },
-        {
-            label: 'Fenster',
-            submenu: [
-                { label: 'Minimieren', role: 'minimize' },
-                { label: 'Schließ^ssen', role: 'close' }
-            ]
-        },
-        {
-            label: 'Hilfe',
-            submenu: [
-                {
-                    label: 'Mehr erfahren',
-                    click: async () => {
-                        await shell.openExternal(help_url);
-                    }
-                }
-            ]
-        }
-    ];
-
-    const menu = Menu.buildFromTemplate(menuTemplate);
-    Menu.setApplicationMenu(menu);
 }
 
 // Ensure single instance of the app
@@ -141,14 +85,14 @@ app.whenReady().then(() => {
     app.setAsDefaultProtocolClient('jgdesktop');
 
     const urlFromArgs = process.argv.find(arg => arg.startsWith('jgdesktop://'));
-    const urlToLoad = urlFromArgs ? urlFromArgs.replace('jgdesktop://', 'https://') : url;
+    const urlToLoad = urlFromArgs ? urlFromArgs.replace('jgdesktop://', 'https://') : config.baseUrl;
     createWindow(urlToLoad);
 });
 
 // Handle deep linking when app is already running
 app.on('second-instance', (event, argv) => {
     const urlFromArgs = argv.find(arg => arg.startsWith('jgdesktop://'));
-    const urlToLoad = urlFromArgs ? urlFromArgs.replace('jgdesktop://', 'https://') : url;
+    const urlToLoad = urlFromArgs ? urlFromArgs.replace('jgdesktop://', 'https://') : config.baseUrl;
 
     if (mainWindow) {
         loadUrlInWindow(mainWindow, urlToLoad);
