@@ -1,19 +1,152 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jubla Glattbrugg</title>
     <style>
         body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #navbar {
+            background-color: #333;
+            color: white;
+            padding: 10px;
+        }
+        #navbar a {
+            color: white;
+            padding: 14px 20px;
+            text-decoration: none;
+        }
+        #navbar a:hover {
+            background-color: #575757;
+        }
+        #content {
+            height: calc(100vh - 40px);
+            overflow: hidden;
+            position: relative;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        #loader {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
+            z-index: 10;
         }
+        #loader.hidden {
+            display: none;
+        }
+        body.dark {
+    background-color: #333;
+    color: #fff;
+}
+
+#navbar {
+    background-color: #444;
+}
+
+#navbar a {
+    color: #fff;
+}
+
+#navbar a:hover {
+    background-color: #575757;
+}
+
     </style>
 </head>
 <body>
-    <h1>Jubla Glattbrugg</h1>
+    <div id="navbar">
+        <a href="#" id="loadJubla">Jubla Glattbrugg</a>
+    </div>
+    <div id="content">
+        <div id="loader">
+            <div>Loading...</div>
+        </div>
+        <iframe id="contentFrame" src=""></iframe>
+    </div>
+
+    <script>
+        const iframe = document.getElementById('contentFrame');
+        const loader = document.getElementById('loader');
+
+        async function loadUrl(url) {
+            loader.classList.remove('hidden'); // Show loader
+
+            // Check if the URL is cached
+            const cachedData = localStorage.getItem(url);
+            const cachedHash = localStorage.getItem(url + '_hash');
+
+            if (cachedData) {
+                // If cached data exists, load it
+                iframe.srcdoc = cachedData;
+                console.log("Loaded from cache:", url);
+            }
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Network response was not ok.');
+
+                const data = await response.text();
+                const newHash = hashCode(data); // Calculate hash of the new content
+
+                // Check if the cached hash matches the new hash
+                if (cachedHash !== newHash) {
+                    // Update the iframe with the new content
+                    iframe.srcdoc = data;
+                    // Cache the new content and hash
+                    localStorage.setItem(url, data);
+                    localStorage.setItem(url + '_hash', newHash);
+                    console.log("Updated cache for:", url);
+                } else {
+                    console.log("No update needed for:", url);
+                }
+
+                loader.classList.add('hidden'); // Hide loader
+            } catch (error) {
+                console.error('Fetch error:', error);
+                // If there's an error, you can choose to show an error message or keep the cached content
+                if (cachedData) {
+                    iframe.srcdoc = cachedData; // Load cached content if available
+                    console.log("Loaded cached content due to error:", url);
+                }
+                loader.classList.add('hidden'); // Hide loader
+            }
+        }
+
+        function hashCode(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = (hash << 5) - hash + str.charCodeAt(i);
+                hash |= 0; // Convert to 32bit integer
+            }
+            return hash;
+        }
+
+        document.getElementById('loadJubla').addEventListener('click', () => {
+            loadUrl('https://jublaglattbrugg.ch');
+        });
+
+        
+    </script>
+    <script>
+        // Check for dark mode preference
+        const isDarkMode = localStorage.getItem('darkMode') === 'true';
+        if (isDarkMode) {
+            document.body.classList.add('dark');
+        }
+    </script>
+    
 </body>
 </html>
