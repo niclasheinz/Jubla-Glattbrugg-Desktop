@@ -3,7 +3,7 @@ name: Build Electron App
 on:
   push:
     tags:
-      - '*'  # This will trigger the workflow on any tag push
+      - 'v*'  # This will trigger the workflow on any tag push
 
 env:
   GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}  # Set the GH_TOKEN globally
