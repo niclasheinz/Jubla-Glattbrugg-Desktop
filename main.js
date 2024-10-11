@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, dialog } = require('electron');
+const { app, BrowserWindow, Menu, shell, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -32,6 +32,83 @@ function createWindow(url = config.url) {
     mainWindow.on('closed', () => {
         mainWindow = null;
     });
+
+    // Create the application menu
+    createMenu();
+}
+
+// Function to create the application menu
+function createMenu() {
+    const menuTemplate = [
+        {
+            label: 'Datei',
+            submenu: [
+                {
+                    label: 'In Browser öffnen',
+                    click: () => {
+                        shell.openExternal(config.url);
+                    }
+                },
+                {
+                    type: 'separator'
+                },
+                {
+                    label: 'Beenden',
+                    accelerator: 'Command+Q', // For macOS
+                    click: () => {
+                        app.quit();
+                    }
+                }
+            ]
+        },
+        {
+            label: 'Bearbeiten',
+            submenu: [
+                {
+                    label: 'Rückgängig',
+                    accelerator: 'Command+Z', // For macOS
+                    role: 'undo'
+                },
+                {
+                    label: 'Wiederholen',
+                    accelerator: 'Shift+Command+Z', // For macOS
+                    role: 'redo'
+                },
+                {
+                    type: 'separator'
+                },
+                {
+                    label: 'Kopieren',
+                    accelerator: 'Command+C', // For macOS
+                    role: 'copy'
+                },
+                {
+                    label: 'Einfügen',
+                    accelerator: 'Command+V', // For macOS
+                    role: 'paste'
+                }
+            ]
+        },
+        {
+            label: 'Hilfe',
+            submenu: [
+                {
+                    label: 'Über',
+                    click: () => {
+                        dialog.showMessageBox(mainWindow, {
+                            type: 'info',
+                            title: 'Über Jubla Glattbrugg',
+                            message: 'Die offizielle Desktop-App für Jubla Glattbrugg\nVersion 0.0.3',
+                            buttons: ['OK']
+                        });
+                    }
+                }
+            ]
+        }
+    ];
+
+    const menu = Menu.buildFromTemplate(menuTemplate);
+    Menu.setApplicationMenu(menu);
 }
 
 // Function to load a URL into the window with a loader
