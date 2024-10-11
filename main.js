@@ -9,7 +9,7 @@ const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 let mainWindow;
 
 // Function to create the main application window
-function createWindow(url = config.baseUrl) {
+function createWindow(url = config.url) {
     if (mainWindow) {
         mainWindow.focus();
         loadUrlInWindow(mainWindow, url);
@@ -23,7 +23,7 @@ function createWindow(url = config.baseUrl) {
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
-            devTools: false // Ensure developer tools are disabled
+            devTools: false,  // Disable developer tools
         },
     });
 
@@ -58,9 +58,14 @@ function loadUrlInWindow(window, url) {
 
 // Check if the URL is allowed
 function isAllowedUrl(url) {
-    const allowedDomains = config.allowedDomains;
-    const parsedUrl = new URL(url);
-    return allowedDomains.includes(parsedUrl.hostname);
+    try {
+        const parsedUrl = new URL(url); // Parse the URL to check if it's valid
+        const allowedDomains = config.allowedDomains;
+        return allowedDomains.includes(parsedUrl.hostname);
+    } catch (e) {
+        console.error(`Invalid URL: ${url}`, e); // Log the error for debugging
+        return false; // If the URL is invalid, return false
+    }
 }
 
 // Show dialog when URL is not allowed
@@ -72,10 +77,11 @@ function showUrlNotAllowedDialog(url) {
         buttons: ['In Browser öffnen', 'Zurück zur Startseite']
     }).then(result => {
         if (result.response === 0) { // 'In Browser öffnen'
-            shell.openExternal(url);
-            mainWindow.close(); // Close the window after opening the URL in the browser
+            shell.openExternal(url).then(() => {
+                mainWindow.close();  // Close the window after opening the URL in the browser
+            });
         } else { // 'Zurück zur Startseite'
-            loadUrlInWindow(mainWindow, config.baseUrl);
+            loadUrlInWindow(mainWindow, config.url); // Load default URL
         }
     });
 }
@@ -85,14 +91,14 @@ app.whenReady().then(() => {
     app.setAsDefaultProtocolClient('jgdesktop');
 
     const urlFromArgs = process.argv.find(arg => arg.startsWith('jgdesktop://'));
-    const urlToLoad = urlFromArgs ? urlFromArgs.replace('jgdesktop://', 'https://') : config.baseUrl;
+    const urlToLoad = urlFromArgs ? urlFromArgs.replace('jgdesktop://', config.url) : config.url;
     createWindow(urlToLoad);
 });
 
 // Handle deep linking when app is already running
 app.on('second-instance', (event, argv) => {
     const urlFromArgs = argv.find(arg => arg.startsWith('jgdesktop://'));
-    const urlToLoad = urlFromArgs ? urlFromArgs.replace('jgdesktop://', 'https://') : config.baseUrl;
+    const urlToLoad = urlFromArgs ? urlFromArgs.replace('jgdesktop://', config.url) : config.url;
 
     if (mainWindow) {
         loadUrlInWindow(mainWindow, urlToLoad);
