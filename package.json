@@ -24,7 +24,7 @@
   },
   "homepage": "https://gitlab.com/niclasheinz/jg-desktop-app#readme",
   "devDependencies": {
-    "electron": "v31.3.0",
+    "electron": "v32.2.0",
     "electron-builder": "^25.1.7"
   },
   "build": {
