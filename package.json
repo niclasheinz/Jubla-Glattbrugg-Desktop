@@ -1,6 +1,6 @@
 {
   "name": "jubla-glattbrugg",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "The official desktop app for Jubla Glattbrugg",
   "main": "main.js",
   "scripts": {
