@@ -140,8 +140,8 @@ function isAllowedUrl(url) {
         const allowedDomains = config.allowedDomains;
         const isAllowed = allowedDomains.includes(parsedUrl.hostname);
 
-        // Allow URLs that start with 'www.' to pass through
-        if (parsedUrl.hostname.startsWith('www.')) {
+        // Allow URLs that start with 'www.' or the specific allowed URL
+        if (parsedUrl.hostname.startsWith('www.') || url === 'https://jublaglattbrugg.ch') {
             return true; // Ignore the restriction
         }
 
