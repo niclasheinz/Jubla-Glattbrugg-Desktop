@@ -4,8 +4,15 @@ const fs = require('fs');
 
 let mainWindow;
 
+// Load URLs from config.json
+const configPath = path.join(__dirname, 'config.json');
+const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+const allowedUrls = config.allowedUrls; 
+const url = config.url;
+const mehrErfahrenUrl = config.mehrErfahrenUrl;
+
 // Function to create the main application window
-function createWindow(url = 'https://jublaglattbrugg.ch') {
+function createWindow(url = url) {
     if (mainWindow) {
         mainWindow.focus();
         loadUrlInWindow(mainWindow, url);
@@ -19,6 +26,7 @@ function createWindow(url = 'https://jublaglattbrugg.ch') {
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
+            devTools: false // Disable developer tools
         },
     });
 
@@ -27,6 +35,8 @@ function createWindow(url = 'https://jublaglattbrugg.ch') {
     mainWindow.on('closed', () => {
         mainWindow = null;
     });
+
+    createMenu();
 }
 
 // Function to load a URL into the window with a loader
@@ -40,7 +50,7 @@ function loadUrlInWindow(window, url) {
         <div class="loader"></div>
     `;
 
-    window.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(loaderHtml)}`, { baseURLForDataURL: '' });
+    window.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(loaderHtml)}`, { urlForDataURL: '' });
     
     window.webContents.once('did-finish-load', () => {
         if (isAllowedUrl(url)) {
@@ -53,9 +63,8 @@ function loadUrlInWindow(window, url) {
 
 // Check if the URL is allowed
 function isAllowedUrl(url) {
-    const allowedDomains = ['jublaglattbrugg.ch'];
     const parsedUrl = new URL(url);
-    return allowedDomains.includes(parsedUrl.hostname);
+    return allowedUrls.includes(parsedUrl.hostname);
 }
 
 // Show dialog when URL is not allowed
@@ -72,19 +81,74 @@ function showUrlNotAllowedDialog(url) {
     });
 }
 
+// Create the German menu for the application
+function createMenu() {
+    const menuTemplate = [
+        {
+            label: 'Datei',
+            submenu: [
+                {
+                    label: 'Beenden',
+                    click: () => { app.quit(); }
+                }
+            ]
+        },
+        {
+            label: 'Bearbeiten',
+            submenu: [
+                { label: 'Rückgängig', role: 'undo' },
+                { label: 'Wiederholen', role: 'redo' },
+                { type: 'separator' },
+                { label: 'Ausschneiden', role: 'cut' },
+                { label: 'Kopieren', role: 'copy' },
+                { label: 'Einfügen', role: 'paste' },
+                { label: 'Alles auswählen', role: 'selectAll' }
+            ]
+        },
+        {
+            label: 'Ansicht',
+            submenu: [
+                { label: 'Neu laden', role: 'reload' },
+                { label: 'Vollbild', role: 'togglefullscreen' }
+            ]
+        },
+        {
+            label: 'Fenster',
+            submenu: [
+                { label: 'Minimieren', role: 'minimize' },
+                { label: 'Schließ^ssen', role: 'close' }
+            ]
+        },
+        {
+            label: 'Hilfe',
+            submenu: [
+                {
+                    label: 'Mehr erfahren',
+                    click: async () => {
+                        await shell.openExternal(help_url);
+                    }
+                }
+            ]
+        }
+    ];
+
+    const menu = Menu.buildFromTemplate(menuTemplate);
+    Menu.setApplicationMenu(menu);
+}
+
 // Ensure single instance of the app
 app.whenReady().then(() => {
     app.setAsDefaultProtocolClient('jgdesktop');
 
     const urlFromArgs = process.argv.find(arg => arg.startsWith('jgdesktop://'));
-    const urlToLoad = urlFromArgs ? urlFromArgs.replace('jgdesktop://', 'https://') : 'https://jublaglattbrugg.ch';
+    const urlToLoad = urlFromArgs ? urlFromArgs.replace('jgdesktop://', 'https://') : url;
     createWindow(urlToLoad);
 });
 
 // Handle deep linking when app is already running
 app.on('second-instance', (event, argv) => {
     const urlFromArgs = argv.find(arg => arg.startsWith('jgdesktop://'));
-    const urlToLoad = urlFromArgs ? urlFromArgs.replace('jgdesktop://', 'https://') : 'https://jublaglattbrugg.ch';
+    const urlToLoad = urlFromArgs ? urlFromArgs.replace('jgdesktop://', 'https://') : url;
 
     if (mainWindow) {
         loadUrlInWindow(mainWindow, urlToLoad);
