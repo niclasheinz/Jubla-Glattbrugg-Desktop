@@ -1,8 +1,5 @@
 {
   "url": "https://jublaglattbrugg.ch",
-  "allowedUrls": [
-    "jublaglattbrugg.ch",
-    "jubla.ch"
-  ],
+  "allowedDomains": ["jublaglattbrugg.ch", "www.jublaglattbrugg.ch"],
   "help_url": "https://jublaglattbrugg.ch/jg-desktop-help"
 }
