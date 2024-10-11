@@ -61,7 +61,7 @@ function isAllowedUrl(url) {
 // Show dialog when URL is not allowed
 function showUrlNotAllowedDialog(url) {
     dialog.showMessageBox(mainWindow, {
-        type: 'Warnung',
+        type: 'warning',
         title: 'URL nicht erlaubt',
         message: `Die Seite "${url}" kann nicht in der Desktop App geöffnet werden.`,
         buttons: ['In Browser öffnen', 'Abbrechen']
