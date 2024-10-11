@@ -1,0 +1,73 @@
+{
+  "name": "jubla-glattbrugg",
+  "version": "0.0.4",
+  "description": "The official desktop app for Jubla Glattbrugg",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/niclasheinz/jg-desktop-app.git"
+  },
+  "author": {
+    "name": "Niclas Heinz",
+    "email": "niclas.heinz@hpost.net"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/niclasheinz/jg-desktop-app/issues"
+  },
+  "homepage": "https://gitlab.com/niclasheinz/jg-desktop-app#readme",
+  "devDependencies": {
+    "electron": "v31.3.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "ch.niclasheinz.jg-desktop",
+    "productName": "Jubla Glattbrugg",
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "desktop": {
+        "Name": "Jubla Glattbrugg",
+        "Type": "Application",
+        "MimeType": "x-scheme-handler/jgdesktop;"
+      }
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.utilities",
+      "extendInfo": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": ["jgdesktop"]
+          }
+        ]
+      }
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ],
+      "publisherName": "Niclas Heinz",
+      "protocols": [
+        {
+          "name": "Jubla Glattbrugg",
+          "schemes": ["jgdesktop"]
+        }
+      ]
+    }
+  }
+}
