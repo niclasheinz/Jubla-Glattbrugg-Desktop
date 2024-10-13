@@ -141,4 +141,4 @@ jobs:
             --title "$TAG_NAME" \  # Use the full tag name for the title
             --notes "Release for $TAG_NAME" \
             --clobber \  # Overwrite existing releases with the same tag
-            ./dist/*.AppImage ./dist/*.exe ./dist/*.dmg
+            ./dist/*  # Use wildcard to match all files in dist directory
