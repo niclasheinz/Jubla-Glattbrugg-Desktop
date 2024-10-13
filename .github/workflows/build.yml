@@ -35,6 +35,9 @@ jobs:
           name: jg-desktop-linux
           path: dist/*.AppImage
 
+      - name: List Linux dist directory
+        run: ls -la dist  # List contents after building
+
   build-windows:
     runs-on: windows-latest
 
@@ -61,6 +64,9 @@ jobs:
           name: jg-desktop-windows
           path: dist/*.exe
 
+      - name: List Windows dist directory
+        run: dir dist  # List contents after building
+
   build-macos:
     runs-on: macos-latest
 
@@ -86,6 +92,9 @@ jobs:
         with:
           name: jg-desktop-macos
           path: dist/*.dmg
+
+      - name: List macOS dist directory
+        run: ls -la dist  # List contents after building
 
   create-release:
     needs: [build-linux, build-windows, build-macos]
@@ -123,10 +132,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG_NAME="${{ github.ref_name }}"  # Get the tag name (e.g., 'refs/tags/v0.0.7')
-          VERSION="${TAG_NAME#refs/tags/}"   # Remove 'refs/tags/' to get 'v0.0.7'
-          VERSION="${VERSION/v/}"            # Remove the leading 'v' to get '0.0.7'
+          TAG_NAME="${{ github.ref_name }}"  # Get the tag name (e.g., 'refs/tags/v0.0.8')
+          VERSION="${TAG_NAME#refs/tags/}"   # Remove 'refs/tags/' to get 'v0.0.8'
+          VERSION="${VERSION/v/}"            # Remove the leading 'v' to get '0.0.8'
           set -x  # Enable verbose output
+          ls -la ./dist  # List files before creating the release
           gh release create "$TAG_NAME" \
             --title "$TAG_NAME" \  # Use the full tag name for the title
             --notes "Release for $TAG_NAME" \
