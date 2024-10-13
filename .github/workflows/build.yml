@@ -139,5 +139,4 @@ jobs:
           gh release create "$TAG_NAME" \
             --title "$TAG_NAME" \
             --notes "Release for $TAG_NAME" \
-            --clobber \
             ./dist/*
