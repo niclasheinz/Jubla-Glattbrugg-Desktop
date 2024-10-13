@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@gitlab.com/niclasheinz/jg-desktop-app.git"
+    "url": "git+ssh://git@gitlab.com/niclasheinz/Jubla-Glattbrugg-Desktop.git"
   },
   "author": {
     "name": "Niclas Heinz",
@@ -20,9 +20,9 @@
   },
   "license": "ISC",
   "bugs": {
-    "url": "https://gitlab.com/niclasheinz/jg-desktop-app/issues"
+    "url": "https://gitlab.com/niclasheinz/Jubla-Glattbrugg-Desktop/issues"
   },
-  "homepage": "https://gitlab.com/niclasheinz/jg-desktop-app#readme",
+  "homepage": "https://gitlab.com/niclasheinz/Jubla-Glattbrugg-Desktop#readme",
   "devDependencies": {
     "electron": "v32.2.0",
     "electron-builder": "v25.1.7"
