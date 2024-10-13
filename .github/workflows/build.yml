@@ -22,12 +22,10 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: |
-          npm install
+        run: npm install
 
       - name: Build Linux AppImage
-        run: |
-          npm run build:linux
+        run: npm run build:linux
 
       - name: Upload Linux AppImage
         uses: actions/upload-artifact@v4
@@ -48,12 +46,10 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: |
-          npm install
+        run: npm install
 
       - name: Build Windows Packages
-        run: |
-          npm run build:win
+        run: npm run build:win
 
       - name: Upload Windows Installer
         uses: actions/upload-artifact@v4
@@ -74,12 +70,10 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: |
-          npm install
+        run: npm install
 
       - name: Build macOS Packages
-        run: |
-          npm run build:mac
+        run: npm run build:mac
 
       - name: Upload macOS Package
         uses: actions/upload-artifact@v4
@@ -87,53 +81,47 @@ jobs:
           name: jg-desktop-macos
           path: dist/*.dmg
 
-name: Release
-
-on:
-  release:
-    types:
-      - created  # Trigger the workflow when a new release is created
-
-jobs:
-
-  publish_on_linux:
+  create-release:
+    needs: [build-linux, build-windows, build-macos]
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2       
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '14'  # Use Node.js version 14
-      - name: Install dependencies
-        run: npm install
-      - name: Publish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run publish
 
-  publish_on_mac:
-    runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '14'  # Use Node.js version 14
-      - name: Install dependencies
-        run: npm install
-      - name: Publish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run publish
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-  publish_on_win:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v2       
-      - uses: actions/setup-node@v2
+      - name: Download Linux AppImage
+        uses: actions/download-artifact@v4
         with:
-          node-version: '14'  # Use Node.js version 14
-      - name: Install dependencies
-        run: npm install
-      - name: Publish
+          name: jg-desktop-linux
+          path: ./dist
+
+      - name: Download Windows Installer
+        uses: actions/download-artifact@v4
+        with:
+          name: jg-desktop-windows
+          path: ./dist
+
+      - name: Download macOS Package
+        uses: actions/download-artifact@v4
+        with:
+          name: jg-desktop-macos
+          path: ./dist
+
+      - name: Create GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run publish
+        run: |
+          gh release create ${{ github.ref }} --title "${{ github.ref }}" --notes "Release for ${{ github.ref }}" \
+          ./dist/*.AppImage ./dist/*.exe ./dist/*.dmg
+
+      - name: Upload Linux AppImage to Release
+        run: |
+          gh release upload ${{ github.ref }} ./dist/*.AppImage --clobber
+
+      - name: Upload Windows Installer to Release
+        run: |
+          gh release upload ${{ github.ref }} ./dist/*.exe --clobber
+
+      - name: Upload macOS Package to Release
+        run: |
+          gh release upload ${{ github.ref }} ./dist/*.dmg --clobber
