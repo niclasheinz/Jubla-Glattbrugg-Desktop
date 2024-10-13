@@ -8,19 +8,16 @@ on:
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Set the GITHUB_TOKEN globally
 
-permissions:
-  contents: write  # Grant write access for contents
-
 jobs:
   build-linux:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v2
         with:
           node-version: '18'
 
@@ -43,10 +40,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v2
         with:
           node-version: '18'
 
@@ -69,10 +66,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v2
         with:
           node-version: '18'
 
@@ -90,50 +87,50 @@ jobs:
           name: jg-desktop-macos
           path: dist/*.dmg
 
-create-release:
-  needs: [build-linux, build-windows, build-macos]
-  runs-on: ubuntu-latest
+  create-release:
+    needs: [build-linux, build-windows, build-macos]
+    runs-on: ubuntu-latest
 
-  steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Download Linux AppImage
-      uses: actions/download-artifact@v4
-      with:
-        name: jg-desktop-linux
-        path: ./dist
+      - name: Download Linux AppImage
+        uses: actions/download-artifact@v4
+        with:
+          name: jg-desktop-linux
+          path: ./dist
 
-    - name: Download Windows Installer
-      uses: actions/download-artifact@v4
-      with:
-        name: jg-desktop-windows
-        path: ./dist
+      - name: Download Windows Installer
+        uses: actions/download-artifact@v4
+        with:
+          name: jg-desktop-windows
+          path: ./dist
 
-    - name: Download macOS Package
-      uses: actions/download-artifact@v4
-      with:
-        name: jg-desktop-macos
-        path: ./dist
+      - name: Download macOS Package
+        uses: actions/download-artifact@v4
+        with:
+          name: jg-desktop-macos
+          path: ./dist
 
-    - name: Set GH_TOKEN for GitHub CLI
-      run: echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
+      - name: Set GH_TOKEN for GitHub CLI
+        run: echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
 
-    - name: Create GitHub Release
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        gh release create "${{ github.ref }}" --title "${{ github.ref }}" --notes "Release for ${{ github.ref }}" \
-        dist/*.AppImage dist/*.exe dist/*.dmg
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref }}" --title "${{ github.ref }}" --notes "Release for ${{ github.ref }}" \
+          dist/*.AppImage dist/*.exe dist/*.dmg
 
-    - name: Upload Linux AppImage to Release
-      run: |
-        gh release upload "${{ github.ref }}" dist/*.AppImage --clobber
+      - name: Upload Linux AppImage to Release
+        run: |
+          gh release upload "${{ github.ref }}" dist/*.AppImage --clobber
 
-    - name: Upload Windows Installer to Release
-      run: |
-        gh release upload "${{ github.ref }}" dist/*.exe --clobber
+      - name: Upload Windows Installer to Release
+        run: |
+          gh release upload "${{ github.ref }}" dist/*.exe --clobber
 
-    - name: Upload macOS Package to Release
-      run: |
-        gh release upload "${{ github.ref }}" dist/*.dmg --clobber
+      - name: Upload macOS Package to Release
+        run: |
+          gh release upload "${{ github.ref }}" dist/*.dmg --clobber
