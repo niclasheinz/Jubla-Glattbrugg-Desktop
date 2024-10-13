@@ -9,8 +9,7 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Set the GITHUB_TOKEN globally
 
 permissions:
-  contents: write
-  releases: write
+  contents: write  # Grant write access for contents
 
 jobs:
   build-linux:
