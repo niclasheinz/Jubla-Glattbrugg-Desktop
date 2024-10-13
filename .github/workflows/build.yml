@@ -10,7 +10,8 @@ env:
 
 permissions:
   contents: write  # Allow writing to the repository contents
-  releases: write  # Allow creating releases
+  packages: write  # Allow publishing packages
+  deployments: write  # Allow deploying applications
 
 jobs:
   build-linux:
