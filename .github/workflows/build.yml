@@ -95,6 +95,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Download Linux AppImage
+        uses: actions/download-artifact@v4
+        with:
+          name: jg-desktop-linux
+          path: ./dist
+
+      - name: Download Windows Installer
+        uses: actions/download-artifact@v4
+        with:
+          name: jg-desktop-windows
+          path: ./dist
+
+      - name: Download macOS Package
+        uses: actions/download-artifact@v4
+        with:
+          name: jg-desktop-macos
+          path: ./dist
+
       - name: Set GH_TOKEN for GitHub CLI
         run: echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
 
