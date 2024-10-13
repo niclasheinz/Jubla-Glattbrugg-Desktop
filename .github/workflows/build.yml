@@ -18,10 +18,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3  # Updated to v3
+        uses: actions/checkout@v2
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3  # Updated to v3
+        uses: actions/setup-node@v3  # Use v3 for Node.js setup
         with:
           node-version: '18'
 
@@ -44,10 +44,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3  # Updated to v3
+        uses: actions/checkout@v2
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3  # Updated to v3
+        uses: actions/setup-node@v3  # Use v3 for Node.js setup
         with:
           node-version: '18'
 
@@ -70,10 +70,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3  # Updated to v3
+        uses: actions/checkout@v2
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3  # Updated to v3
+        uses: actions/setup-node@v3  # Use v3 for Node.js setup
         with:
           node-version: '18'
 
@@ -97,7 +97,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3  # Updated to v3
+        uses: actions/checkout@v2
 
       - name: Download Linux AppImage
         uses: actions/download-artifact@v4
@@ -124,17 +124,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create ${{ github.ref }} --title "${{ github.ref }}" --notes "Release for ${{ github.ref }}" \
-          dist/*.AppImage dist/*.exe dist/*.dmg
-
-      - name: Upload Linux AppImage to Release
-        run: |
-          gh release upload ${{ github.ref }} dist/*.AppImage --clobber
-
-      - name: Upload Windows Installer to Release
-        run: |
-          gh release upload ${{ github.ref }} dist/*.exe --clobber
-
-      - name: Upload macOS Package to Release
-        run: |
-          gh release upload ${{ github.ref }} dist/*.dmg --clobber
+          gh release create ${{ github.ref }} \
+            --title "${{ github.ref }}" \
+            --notes "Release for ${{ github.ref }}" \
+            ./dist/*.AppImage ./dist/*.exe ./dist/*.dmg
