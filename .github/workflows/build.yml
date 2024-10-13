@@ -92,7 +92,7 @@ jobs:
           name: jg-desktop-macos
           path: dist/*.dmg
 
-  create-release:
+    create-release:
     needs: [build-linux, build-windows, build-macos]
     runs-on: ubuntu-latest
 
@@ -125,7 +125,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create ${{ github.ref }} \
+          # Create or update the release with the tag name as the title
+          gh release create "${{ github.ref }}" \
             --title "${{ github.ref }}" \
             --notes "Release for ${{ github.ref }}" \
+            --draft --clobber \
             ./dist/*.AppImage ./dist/*.exe ./dist/*.dmg
