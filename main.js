@@ -93,6 +93,12 @@ function createMenu() {
             label: 'Hilfe',
             submenu: [
                 {
+                    label: 'Fehler melden',
+                    click: () => {
+                        shell.openExternal('https://www.jublaglattbrugg.ch/desktop-fehler');
+                    }
+                },
+                {
                     label: 'Über',
                     click: () => {
                         dialog.showMessageBox(mainWindow, {
