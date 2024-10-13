@@ -123,10 +123,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG_NAME="${{ github.ref_name }}"  # Extract the tag name
+          TAG_NAME="${{ github.ref_name }}"  # Get the tag name (e.g., 'refs/tags/v0.0.7')
+          VERSION="${TAG_NAME#refs/tags/}"   # Remove 'refs/tags/' to get 'v0.0.7'
+          VERSION="${VERSION/v/}"            # Remove the leading 'v' to get '0.0.7'
           set -x  # Enable verbose output
-          gh release create $TAG_NAME \
-            --title $TAG_NAME \  # Use the tag name for the title
+          gh release create "$TAG_NAME" \
+            --title "$TAG_NAME" \  # Use the full tag name for the title
             --notes "Release for $TAG_NAME" \
             --clobber \  # Overwrite existing releases with the same tag
             ./dist/*.AppImage ./dist/*.exe ./dist/*.dmg
