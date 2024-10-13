@@ -124,8 +124,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG_NAME="${{ github.ref_name }}"  # Extract the tag name
-          gh release create "$TAG_NAME" \
-            --title "$TAG_NAME" \  # Use the tag name for the title
+          set -x  # Enable verbose output
+          gh release create $TAG_NAME \
+            --title $TAG_NAME \  # Use the tag name for the title
             --notes "Release for $TAG_NAME" \
             --clobber \  # Overwrite existing releases with the same tag
             ./dist/*.AppImage ./dist/*.exe ./dist/*.dmg
