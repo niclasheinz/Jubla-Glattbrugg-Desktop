@@ -113,6 +113,9 @@ jobs:
           name: jg-desktop-macos
           path: ./dist
 
+      - name: List files in dist directory for debugging
+        run: ls -la ./dist  # List contents of the dist directory
+
       - name: Set GH_TOKEN for GitHub CLI
         run: echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
 
