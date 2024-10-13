@@ -8,6 +8,10 @@ on:
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Set the GITHUB_TOKEN globally
 
+permissions:
+  contents: write  # Allow writing to the repository contents
+  releases: write  # Allow creating releases
+
 jobs:
   build-linux:
     runs-on: ubuntu-latest
