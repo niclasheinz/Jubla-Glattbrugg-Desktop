@@ -8,6 +8,5 @@ Dies ist die Desktop Applikation für die Jubla Website mit exklusiven Funktione
 - Sehe die Website über die Desktop App
 
 ### Zukünftige Funktionen: 
-- [ ] Offline support
-- [ ] Bekomme Benachrichtigungen bei anstehenden Terminen
-- [ ] Bekomme Benachritigungen bei News
+- [ ] Bekomme Benachrichtigungen bei anstehenden Terminen #4
+- [ ] Bekomme Benachritigungen bei News #8
