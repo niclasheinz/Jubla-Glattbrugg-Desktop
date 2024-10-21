@@ -21,6 +21,10 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Clear NPM Cache
+        run: |
+          npm cache clean --force
+
       - name: Install dependencies
         run: |
           npm install
@@ -50,6 +54,10 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Clear NPM Cache
+        run: |
+          npm cache clean --force
+
       - name: Install dependencies
         run: |
           npm install
@@ -78,6 +86,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+
+      - name: Clear NPM Cache
+        run: |
+          npm cache clean --force
 
       - name: Install dependencies
         run: |
