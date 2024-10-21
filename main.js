@@ -181,14 +181,14 @@ app.whenReady().then(() => {
     app.setAsDefaultProtocolClient('jgdesktop');
 
     const urlFromArgs = process.argv.find(arg => arg.startsWith('jgdesktop://'));
-    const urlToLoad = urlFromArgs ? decodeURIComponent(urlFromArgs.replace('jgdesktop://', '')) : config.url;
+    const urlToLoad = urlFromArgs ? formatUrl(decodeURIComponent(urlFromArgs.replace('jgdesktop://', ''))) : config.url;
     createWindow(urlToLoad);
 });
 
 // Handle deep linking when app is already running
 app.on('second-instance', (event, argv) => {
     const urlFromArgs = argv.find(arg => arg.startsWith('jgdesktop://'));
-    const urlToLoad = urlFromArgs ? decodeURIComponent(urlFromArgs.replace('jgdesktop://', '')) : config.url;
+    const urlToLoad = urlFromArgs ? formatUrl(decodeURIComponent(urlFromArgs.replace('jgdesktop://', ''))) : config.url;
 
     if (mainWindow) {
         loadUrlInWindow(mainWindow, urlToLoad);
@@ -197,6 +197,16 @@ app.on('second-instance', (event, argv) => {
         createWindow(urlToLoad);
     }
 });
+
+// Function to format the URL correctly
+function formatUrl(url) {
+    // Check if the URL is missing a protocol (e.g., starts with "jublaglattbrugg.ch")
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = `https://${url}`; // Prepend 'https://' if it's missing
+    }
+    return url;
+}
+
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
