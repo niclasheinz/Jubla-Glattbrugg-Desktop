@@ -27,7 +27,7 @@
   "homepage": "https://github.com/niclasheinz/Jubla-Glattbrugg-Desktop#readme",
   "devDependencies": {
     "electron": "v33.0.1",
-    "electron-builder": "v25.1.7"
+    "electron-builder": "v25.1.8"
   },
   "build": {
     "appId": "ch.niclasheinz.jg-desktop",
