@@ -45,9 +45,7 @@ function createMenu() {
             submenu: [
                 {
                     label: 'Agenda',
-                    click: () => {
-                        shell.openExternal(config.url_Agenda);
-                    }
+                    click: () => loadUrlInWindow(mainWindow, config.link_Agenda)
                 }
             ]
         },
@@ -63,21 +61,9 @@ function createMenu() {
                 { type: 'separator' },
                 {
                     label: 'Beenden',
-                    accelerator: 'Command+Q', // For macOS
-                    click: () => {
-                        app.quit();
-                    }
+                    accelerator: 'Command+Q',
+                    click: () => app.quit()
                 }
-            ]
-        },
-        {
-            label: 'Bearbeiten',
-            submenu: [
-                { label: 'Rückgängig', accelerator: 'Command+Z', role: 'undo' },
-                { label: 'Wiederholen', accelerator: 'Shift+Command+Z', role: 'redo' },
-                { type: 'separator' },
-                { label: 'Kopieren', accelerator: 'Command+C', role: 'copy' },
-                { label: 'Einfügen', accelerator: 'Command+V', role: 'paste' }
             ]
         },
         {
@@ -85,9 +71,7 @@ function createMenu() {
             submenu: [
                 {
                     label: 'Fehler melden',
-                    click: () => {
-                        shell.openExternal('config.url_help');
-                    }
+                    click: () => shell.openExternal(config.help_url)
                 },
                 {
                     label: 'Über',
@@ -108,49 +92,44 @@ function createMenu() {
     Menu.setApplicationMenu(menu);
 }
 
-
-// Function to load a URL into the window with a loader
+// Function to load a URL into the main window
 function loadUrlInWindow(window, url) {
-    const loaderHtml = `
-        <style>
-            body { margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: Arial, sans-serif; }
-            .loader { border: 16px solid #f3f3f3; border-top: 16px solid #3498db; border-radius: 50%; width: 120px; height: 120px; animation: spin 2s linear infinite; }
-            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        </style>
-        <div class="loader"></div>
-    `;
+    const formattedUrl = formatUrl(url);
 
-    window.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(loaderHtml)}`, { baseURLForDataURL: '' });
-    
-    window.webContents.once('did-finish-load', () => {
-        if (isAllowedUrl(url)) {
-            window.loadURL(url);
-        } else {
-            showUrlNotAllowedDialog(url);
-        }
-    });
-}
-
-// Check if the URL is allowed
-function isAllowedUrl(url) {
-    try {
-        const parsedUrl = new URL(url); // Parse the URL to check if it's valid
-        const allowedDomains = config.allowedDomains;
-        const isAllowed = allowedDomains.includes(parsedUrl.hostname);
-
-        // Allow URLs that start with 'www.' or the specific allowed URL
-        if (parsedUrl.hostname.endsWith('.jublaglattbrugg.ch')) {
-            return true; // Allow all subdomains
-        }
-
-        return isAllowed;
-    } catch (e) {
-        console.error(`Invalid URL: ${url}`, e); // Log the error for debugging
-        return false; // If the URL is invalid, return false
+    // Check if the URL is allowed
+    if (isAllowedUrl(formattedUrl)) {
+        window.loadURL(formattedUrl);
+    } else {
+        showUrlNotAllowedDialog(formattedUrl);
     }
 }
 
-// Show dialog when URL is not allowed
+// Format URL to use https and ensure valid domain structure
+function formatUrl(url) {
+    // Ensure URL uses https protocol
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = `https://${url}`;
+    } else if (url.startsWith('http://')) {
+        url = url.replace('http://', 'https://');
+    }
+    return url;
+}
+
+// Check if the URL is within allowed domains
+function isAllowedUrl(url) {
+    try {
+        const parsedUrl = new URL(url);
+        const allowedDomains = config.allowedDomains;
+
+        // Check if hostname matches any allowed domain
+        return allowedDomains.some(domain => parsedUrl.hostname === domain || parsedUrl.hostname.endsWith(`.${domain}`));
+    } catch (e) {
+        console.error(`Invalid URL: ${url}`, e);
+        return false;
+    }
+}
+
+// Show a dialog if the URL is not allowed
 function showUrlNotAllowedDialog(url) {
     dialog.showMessageBox(mainWindow, {
         type: 'warning',
@@ -158,29 +137,26 @@ function showUrlNotAllowedDialog(url) {
         message: `Die Seite "${url}" kann nicht in der Desktop App geöffnet werden.`,
         buttons: ['In Browser öffnen', 'Zurück zur Startseite']
     }).then(result => {
-        if (result.response === 0) { // 'In Browser öffnen'
-            shell.openExternal(url).then(() => {
-                mainWindow.close();  // Close the window after opening the URL in the browser
-            });
-        } else { // 'Zurück zur Startseite'
-            loadUrlInWindow(mainWindow, config.url); // Load default URL
+        if (result.response === 0) {  // 'In Browser öffnen'
+            shell.openExternal(url).then(() => mainWindow.close());
+        } else {  // 'Zurück zur Startseite'
+            loadUrlInWindow(mainWindow, config.url);
         }
     });
 }
 
-// Ensure single instance of the app
+// Ensure single instance and handle protocol URLs
 app.whenReady().then(() => {
     app.setAsDefaultProtocolClient('jgdesktop');
 
     const urlFromArgs = process.argv.find(arg => arg.startsWith('jgdesktop://'));
-    const urlToLoad = urlFromArgs ? formatUrl(decodeURIComponent(urlFromArgs.replace('jgdesktop://', ''))) : config.url;
+    const urlToLoad = urlFromArgs ? formatUrl(urlFromArgs.replace('jgdesktop://', '')) : config.url;
     createWindow(urlToLoad);
 });
 
-// Handle deep linking when app is already running
 app.on('second-instance', (event, argv) => {
     const urlFromArgs = argv.find(arg => arg.startsWith('jgdesktop://'));
-    const urlToLoad = urlFromArgs ? formatUrl(decodeURIComponent(urlFromArgs.replace('jgdesktop://', ''))) : config.url;
+    const urlToLoad = urlFromArgs ? formatUrl(urlFromArgs.replace('jgdesktop://', '')) : config.url;
 
     if (mainWindow) {
         loadUrlInWindow(mainWindow, urlToLoad);
@@ -190,24 +166,11 @@ app.on('second-instance', (event, argv) => {
     }
 });
 
-// Function to format the URL correctly
-function formatUrl(url) {
-    // Check if the URL is missing a protocol (e.g., starts with "jublaglattbrugg.ch")
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        url = `https://${url}`; // Prepend 'https://' if it's missing
-    }
-    return url;
-}
-
-
+// Quit when all windows are closed (except on macOS)
 app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
-        app.quit();
-    }
+    if (process.platform !== 'darwin') app.quit();
 });
 
 app.on('activate', () => {
-    if (mainWindow === null) {
-        createWindow();
-    }
+    if (mainWindow === null) createWindow();
 });
