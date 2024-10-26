@@ -120,7 +120,7 @@ function openPopup() {
         <html>
         <body>
             <h2>Open URL</h2>
-            <input id="keyword" type="text" placeholder="Enter keyword to open (e.g., 'neos')">
+            <input id="keyword" type="text" placeholder="Enter keyword (e.g., 'neos')">
             <button id="submit">Submit</button>
             <script>
                 const { ipcRenderer } = require('electron');
@@ -139,8 +139,9 @@ function openPopup() {
     ipcMain.on('keyword-submitted', (event, keyword) => {
         if (!popupWindow.isDestroyed()) { // Check if the window is still open
             popupWindow.close(); // Close the window after processing
-            if (keyword && config[keyword]) {
-                openProtocolLink(`jgdesktop://jublaglattbrugg.ch/${keyword}`);
+            const url = config.keywords[keyword]; // Retrieve the URL based on the keyword
+            if (url) {
+                openProtocolLink(url);
             } else {
                 dialog.showMessageBox(mainWindow, {
                     type: 'error',
