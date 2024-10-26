@@ -47,20 +47,24 @@ function createMenu() {
             label: 'Jubla Glattbrugg',
             submenu: [
                 {
-                    label: 'Agenda',
-                    click: () => {
-                        loadUrlInWindow(mainWindow, config.link_Agenda);
-                    }
-                },
-            ]
-        },
-        {
-            label: 'Datei',
-            submenu: [
-                {
                     label: 'In Browser öffnen',
                     click: () => {
                         shell.openExternal(config.url);
+                    }
+                },
+                {
+                    type: 'separator'
+                },
+                {
+                    label: 'Agenda',
+                    click: () => {
+                        loadUrlInWindow(mainWindow, config.url_Agenda);
+                    }
+                },
+                {
+                    label: 'News',
+                    click: () => {
+                        loadUrlInWindow(mainWindow, config.url_News);
                     }
                 },
                 {

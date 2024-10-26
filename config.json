@@ -3,6 +3,7 @@
   "allowedDomains": ["jublaglattbrugg.ch", "www.jublaglattbrugg.ch", "www.jubla.ch", "toolbox.jublaglattbrugg.ch"],
   "url_help": "https://jublaglattbrugg.ch/jg-desktop-help",
   "url_Agenda": "jgdesktop://jublaglattbrugg.ch/agenda",
+  "url_News": "jgdesktop://jublaglattbrugg.ch/aktuelles",
   "keywords": {
     "neos": "jgdesktop://jublaglattbrugg.ch/neos"
     }
