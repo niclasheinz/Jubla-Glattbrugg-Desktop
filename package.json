@@ -1,8 +1,7 @@
 {
   "name": "jubla-glattbrugg",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Jubla Glattbrugg Desktop",
-  "productName": "Jubla Glattbrugg",
   "desktopName": "jg-desktop",
   "main": "main.js",
   "scripts": {
@@ -29,7 +28,7 @@
     "electron": "v33.0.1",
     "electron-builder": "v25.1.8"
   },
-  "dependencies": {
+  "optionalDependencies": {
     "dmg-license": "1.0.0"
   },
   "build": {
