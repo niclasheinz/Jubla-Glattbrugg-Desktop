@@ -27,7 +27,14 @@ function createWindow(url = config.url) {
         },
     });
 
+    // Load the main URL
     loadUrlInWindow(mainWindow, url);
+
+    // Intercept link clicks to show a confirmation dialog
+    mainWindow.webContents.on('new-window', (event, url) => {
+        event.preventDefault(); // Prevent default behavior
+        handleLinkClick(url); // Handle the link click
+    });
 
     mainWindow.on('closed', () => {
         mainWindow = null;
@@ -141,7 +148,7 @@ function openPopup() {
 
     // Handle keyword submission
     ipcMain.on('keyword-submitted', (event, keyword) => {
-        if (!popupWindow.isDestroyed()) { // Check if the window is still open
+        if (!popupWindow.isDestroyed()) {
             popupWindow.close(); // Close the window after processing
             const url = config.keywords[keyword]; // Retrieve the URL based on the keyword
             if (url) {
@@ -158,7 +165,6 @@ function openPopup() {
 
     // Handle window closed event
     popupWindow.on('closed', () => {
-        // Remove the IPC listener when the popup is closed
         ipcMain.removeAllListeners('keyword-submitted');
     });
 }
@@ -179,6 +185,25 @@ function openProtocolLink(url) {
                 shell.openExternal(formattedUrl);
             } else {
                 loadUrlInWindow(mainWindow, config.url);
+            }
+        });
+    }
+}
+
+// Function to handle link clicks
+function handleLinkClick(url) {
+    const formattedUrl = formatUrl(url);
+    if (isAllowedUrl(formattedUrl)) {
+        loadUrlInWindow(mainWindow, formattedUrl);
+    } else {
+        dialog.showMessageBox(mainWindow, {
+            type: 'warning',
+            title: 'Link nicht erlaubt',
+            message: `Die Seite "${formattedUrl}" kann nicht in der Desktop App geöffnet werden. Möchten Sie die Seite im Browser öffnen?`,
+            buttons: ['Ja', 'Nein']
+        }).then(result => {
+            if (result.response === 0) {
+                shell.openExternal(formattedUrl);
             }
         });
     }
