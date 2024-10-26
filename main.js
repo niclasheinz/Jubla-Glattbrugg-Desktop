@@ -41,6 +41,17 @@ function createWindow(url = config.url) {
 function createMenu() {
     const menuTemplate = [
         {
+            label: 'Jubla Glattbrugg',
+            submenu: [
+                {
+                    label: 'Agenda',
+                    click: () => {
+                        shell.openExternal(config.url_Agenda);
+                    }
+                }
+            ]
+        },
+        {
             label: 'Datei',
             submenu: [
                 {
@@ -49,9 +60,7 @@ function createMenu() {
                         shell.openExternal(config.url);
                     }
                 },
-                {
-                    type: 'separator'
-                },
+                { type: 'separator' },
                 {
                     label: 'Beenden',
                     accelerator: 'Command+Q', // For macOS
@@ -64,29 +73,11 @@ function createMenu() {
         {
             label: 'Bearbeiten',
             submenu: [
-                {
-                    label: 'Rückgängig',
-                    accelerator: 'Command+Z', // For macOS
-                    role: 'undo'
-                },
-                {
-                    label: 'Wiederholen',
-                    accelerator: 'Shift+Command+Z', // For macOS
-                    role: 'redo'
-                },
-                {
-                    type: 'separator'
-                },
-                {
-                    label: 'Kopieren',
-                    accelerator: 'Command+C', // For macOS
-                    role: 'copy'
-                },
-                {
-                    label: 'Einfügen',
-                    accelerator: 'Command+V', // For macOS
-                    role: 'paste'
-                }
+                { label: 'Rückgängig', accelerator: 'Command+Z', role: 'undo' },
+                { label: 'Wiederholen', accelerator: 'Shift+Command+Z', role: 'redo' },
+                { type: 'separator' },
+                { label: 'Kopieren', accelerator: 'Command+C', role: 'copy' },
+                { label: 'Einfügen', accelerator: 'Command+V', role: 'paste' }
             ]
         },
         {
@@ -95,7 +86,7 @@ function createMenu() {
                 {
                     label: 'Fehler melden',
                     click: () => {
-                        shell.openExternal('https://www.jublaglattbrugg.ch/desktop-fehler');
+                        shell.openExternal('config.url_help');
                     }
                 },
                 {
@@ -116,6 +107,7 @@ function createMenu() {
     const menu = Menu.buildFromTemplate(menuTemplate);
     Menu.setApplicationMenu(menu);
 }
+
 
 // Function to load a URL into the window with a loader
 function loadUrlInWindow(window, url) {
