@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, shell, dialog } = require('electron');
+const { app, BrowserWindow, Menu, shell, dialog, globalShortcut } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -35,6 +35,9 @@ function createWindow(url = config.url) {
 
     // Create the application menu
     createMenu();
+
+    // Register shortcut to open popup
+    globalShortcut.register('Control+O', openPopup);
 }
 
 // Function to create the application menu
@@ -45,8 +48,10 @@ function createMenu() {
             submenu: [
                 {
                     label: 'Agenda',
-                    click: () => loadUrlInWindow(mainWindow, config.link_Agenda)
-                }
+                    click: () => {
+                        loadUrlInWindow(mainWindow, config.link_Agenda);
+                    }
+                },
             ]
         },
         {
@@ -58,11 +63,15 @@ function createMenu() {
                         shell.openExternal(config.url);
                     }
                 },
-                { type: 'separator' },
+                {
+                    type: 'separator'
+                },
                 {
                     label: 'Beenden',
                     accelerator: 'Command+Q',
-                    click: () => app.quit()
+                    click: () => {
+                        app.quit();
+                    }
                 }
             ]
         },
@@ -71,17 +80,8 @@ function createMenu() {
             submenu: [
                 {
                     label: 'Fehler melden',
-                    click: () => shell.openExternal(config.help_url)
-                },
-                {
-                    label: 'Über',
                     click: () => {
-                        dialog.showMessageBox(mainWindow, {
-                            type: 'info',
-                            title: 'Über Jubla Glattbrugg',
-                            message: 'Die offizielle Desktop-App für Jubla Glattbrugg\nVersion 0.0.6',
-                            buttons: ['OK']
-                        });
+                        shell.openExternal(config.help_url);
                     }
                 }
             ]
@@ -92,85 +92,102 @@ function createMenu() {
     Menu.setApplicationMenu(menu);
 }
 
-// Function to load a URL into the main window
-function loadUrlInWindow(window, url) {
-    const formattedUrl = formatUrl(url);
-
-    // Check if the URL is allowed
-    if (isAllowedUrl(formattedUrl)) {
-        window.loadURL(formattedUrl);
-    } else {
-        showUrlNotAllowedDialog(formattedUrl);
-    }
-}
-
-// Format URL to use https and ensure valid domain structure
-function formatUrl(url) {
-    // Ensure URL uses https protocol
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        url = `https://${url}`;
-    } else if (url.startsWith('http://')) {
-        url = url.replace('http://', 'https://');
-    }
-    return url;
-}
-
-// Check if the URL is within allowed domains
-function isAllowedUrl(url) {
-    try {
-        const parsedUrl = new URL(url);
-        const allowedDomains = config.allowedDomains;
-
-        // Check if hostname matches any allowed domain
-        return allowedDomains.some(domain => parsedUrl.hostname === domain || parsedUrl.hostname.endsWith(`.${domain}`));
-    } catch (e) {
-        console.error(`Invalid URL: ${url}`, e);
-        return false;
-    }
-}
-
-// Show a dialog if the URL is not allowed
-function showUrlNotAllowedDialog(url) {
-    dialog.showMessageBox(mainWindow, {
-        type: 'warning',
-        title: 'URL nicht erlaubt',
-        message: `Die Seite "${url}" kann nicht in der Desktop App geöffnet werden.`,
-        buttons: ['In Browser öffnen', 'Zurück zur Startseite']
+// Function to open the popup for URL entry
+function openPopup() {
+    dialog.showInputBox(mainWindow, {
+        title: 'Open URL',
+        message: 'Enter keyword to open (e.g., "neos"):'
     }).then(result => {
-        if (result.response === 0) {  // 'In Browser öffnen'
-            shell.openExternal(url).then(() => mainWindow.close());
-        } else {  // 'Zurück zur Startseite'
-            loadUrlInWindow(mainWindow, config.url);
+        const keyword = result.response.toLowerCase();
+        if (keyword && config[keyword]) {
+            openProtocolLink(`jgdesktop://jublaglattbrugg.ch/${keyword}`);
+        } else {
+            dialog.showMessageBox(mainWindow, {
+                type: 'error',
+                title: 'Ungültiges Schlüsselwort',
+                message: 'Das eingegebene Schlüsselwort ist ungültig oder nicht konfiguriert.'
+            });
         }
     });
 }
 
-// Ensure single instance and handle protocol URLs
+// Function to handle protocol link and validate domain
+function openProtocolLink(url) {
+    const formattedUrl = formatUrl(url);
+    if (isAllowedUrl(formattedUrl)) {
+        loadUrlInWindow(mainWindow, formattedUrl);
+    } else {
+        dialog.showMessageBox(mainWindow, {
+            type: 'warning',
+            title: 'URL nicht erlaubt',
+            message: `Die Seite "${formattedUrl}" kann nicht in der Desktop App geöffnet werden.`,
+            buttons: ['In Browser öffnen', 'Zurück zur Startseite']
+        }).then(result => {
+            if (result.response === 0) {
+                shell.openExternal(formattedUrl);
+            } else {
+                loadUrlInWindow(mainWindow, config.url);
+            }
+        });
+    }
+}
+
+// Function to load a URL into the window
+function loadUrlInWindow(window, url) {
+    const loaderHtml = `
+        <style>
+            body { margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: Arial, sans-serif; }
+            .loader { border: 16px solid #f3f3f3; border-top: 16px solid #3498db; border-radius: 50%; width: 120px; height: 120px; animation: spin 2s linear infinite; }
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        </style>
+        <div class="loader"></div>
+    `;
+
+    window.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(loaderHtml)}`, { baseURLForDataURL: '' });
+
+    window.webContents.once('did-finish-load', () => {
+        window.loadURL(url);
+    });
+}
+
+// Function to format URLs (replacing http with https)
+function formatUrl(url) {
+    if (!url.startsWith('http')) {
+        url = `https://${url.replace(/^jgdesktop:\/\//, '')}`;
+    }
+    return url;
+}
+
+// Check if the URL is allowed based on the domains in config.json
+function isAllowedUrl(url) {
+    try {
+        const parsedUrl = new URL(url);
+        const allowedDomains = config.allowedDomains;
+        return allowedDomains.some(domain => parsedUrl.hostname.endsWith(domain));
+    } catch {
+        return false;
+    }
+}
+
+// Ensure single instance of the app
 app.whenReady().then(() => {
     app.setAsDefaultProtocolClient('jgdesktop');
-
     const urlFromArgs = process.argv.find(arg => arg.startsWith('jgdesktop://'));
-    const urlToLoad = urlFromArgs ? formatUrl(urlFromArgs.replace('jgdesktop://', '')) : config.url;
-    createWindow(urlToLoad);
+    createWindow(urlFromArgs ? formatUrl(decodeURIComponent(urlFromArgs.replace('jgdesktop://', ''))) : config.url);
 });
 
 app.on('second-instance', (event, argv) => {
     const urlFromArgs = argv.find(arg => arg.startsWith('jgdesktop://'));
-    const urlToLoad = urlFromArgs ? formatUrl(urlFromArgs.replace('jgdesktop://', '')) : config.url;
-
     if (mainWindow) {
-        loadUrlInWindow(mainWindow, urlToLoad);
+        openProtocolLink(urlFromArgs ? formatUrl(decodeURIComponent(urlFromArgs.replace('jgdesktop://', ''))) : config.url);
         mainWindow.focus();
-    } else {
-        createWindow(urlToLoad);
     }
 });
 
-// Quit when all windows are closed (except on macOS)
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
 });
 
 app.on('activate', () => {
-    if (mainWindow === null) createWindow();
+    if (!mainWindow) createWindow();
 });
