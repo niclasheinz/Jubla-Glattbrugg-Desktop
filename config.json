@@ -1,6 +1,6 @@
 {
   "url": "https://jublaglattbrugg.ch",
-  "allowedDomains": ["jublaglattbrugg.ch", "www.jublaglattbrugg.ch", "www.jubla.ch"],
+  "allowedDomains": ["jublaglattbrugg.ch", "www.jublaglattbrugg.ch", "www.jubla.ch", "toolbox.jublaglattbrugg.ch"],
   "url_help": "https://jublaglattbrugg.ch/jg-desktop-help",
   "url_Agenda": "jgdesktop://jublaglattbrugg.ch/agenda"
 }
