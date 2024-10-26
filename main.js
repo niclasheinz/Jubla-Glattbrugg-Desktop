@@ -81,7 +81,19 @@ function createMenu() {
                 {
                     label: 'Fehler melden',
                     click: () => {
-                        shell.openExternal(config.help_url);
+
+                        shell.openExternal('config.url_help');
+                    }
+                },
+                {
+                    label: 'Über',
+                    click: () => {
+                        dialog.showMessageBox(mainWindow, {
+                            type: 'info',
+                            title: 'Über Jubla Glattbrugg',
+                            message: 'Die offizielle Desktop-App für Jubla Glattbrugg\nVersion 0.0.7',
+                            buttons: ['OK']
+                        });
                     }
                 }
             ]
