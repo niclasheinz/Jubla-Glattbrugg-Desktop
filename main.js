@@ -91,7 +91,7 @@ function createMenu() {
                         dialog.showMessageBox(mainWindow, {
                             type: 'info',
                             title: 'Über Jubla Glattbrugg',
-                            message: 'Die offizielle Desktop-App für Jubla Glattbrugg\nVersion 0.0.7',
+                            message: 'Die offizielle Desktop-App für Jubla Glattbrugg\nVersion 0.0.8',
                             buttons: ['OK']
                         });
                     }
