@@ -81,8 +81,7 @@ function createMenu() {
                 {
                     label: 'Fehler melden',
                     click: () => {
-
-                        shell.openExternal('config.url_help');
+                        shell.openExternal(config.url_help);
                     }
                 },
                 {
@@ -106,11 +105,39 @@ function createMenu() {
 
 // Function to open the popup for URL entry
 function openPopup() {
-    dialog.showInputBox(mainWindow, {
-        title: 'Open URL',
-        message: 'Enter keyword to open (e.g., "neos"):'
-    }).then(result => {
-        const keyword = result.response.toLowerCase();
+    const popupWindow = new BrowserWindow({
+        width: 400,
+        height: 200,
+        parent: mainWindow,
+        modal: true,
+        webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false,
+        }
+    });
+
+    const htmlContent = `
+        <html>
+        <body>
+            <h2>Open URL</h2>
+            <input id="keyword" type="text" placeholder="Enter keyword to open (e.g., 'neos')">
+            <button id="submit">Submit</button>
+            <script>
+                const { ipcRenderer } = require('electron');
+                document.getElementById('submit').onclick = () => {
+                    const keyword = document.getElementById('keyword').value;
+                    ipcRenderer.send('keyword-submitted', keyword);
+                };
+            </script>
+        </body>
+        </html>
+    `;
+
+    popupWindow.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(htmlContent)}`);
+
+    // Handle keyword submission
+    require('electron').ipcMain.on('keyword-submitted', (event, keyword) => {
+        popupWindow.close();
         if (keyword && config[keyword]) {
             openProtocolLink(`jgdesktop://jublaglattbrugg.ch/${keyword}`);
         } else {
