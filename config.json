@@ -4,6 +4,6 @@
   "url_help": "https://jublaglattbrugg.ch/jg-desktop-help",
   "url_Agenda": "jgdesktop://jublaglattbrugg.ch/agenda",
   "keywords": {
-    "admin": "jgdesktop://jublaglattbrugg.ch/neos"
+    "neos": "jgdesktop://jublaglattbrugg.ch/neos"
     }
 }
