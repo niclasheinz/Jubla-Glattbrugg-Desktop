@@ -7,6 +7,10 @@ on:
     tags:
       - 'v*'  # This will trigger the workflow when a new tag starting with 'v' is pushed
 
+env:
+  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}  # Set the GH_TOKEN globally
+
+
 jobs:
   build-linux:
     runs-on: ubuntu-latest
