@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, shell, dialog, globalShortcut } = require('electron');
+const { app, BrowserWindow, Menu, shell, dialog, globalShortcut, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -136,17 +136,25 @@ function openPopup() {
     popupWindow.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(htmlContent)}`);
 
     // Handle keyword submission
-    require('electron').ipcMain.on('keyword-submitted', (event, keyword) => {
-        popupWindow.close();
-        if (keyword && config[keyword]) {
-            openProtocolLink(`jgdesktop://jublaglattbrugg.ch/${keyword}`);
-        } else {
-            dialog.showMessageBox(mainWindow, {
-                type: 'error',
-                title: 'Ungültiges Schlüsselwort',
-                message: 'Das eingegebene Schlüsselwort ist ungültig oder nicht konfiguriert.'
-            });
+    ipcMain.on('keyword-submitted', (event, keyword) => {
+        if (!popupWindow.isDestroyed()) { // Check if the window is still open
+            popupWindow.close(); // Close the window after processing
+            if (keyword && config[keyword]) {
+                openProtocolLink(`jgdesktop://jublaglattbrugg.ch/${keyword}`);
+            } else {
+                dialog.showMessageBox(mainWindow, {
+                    type: 'error',
+                    title: 'Ungültiges Schlüsselwort',
+                    message: 'Das eingegebene Schlüsselwort ist ungültig oder nicht konfiguriert.'
+                });
+            }
         }
+    });
+
+    // Handle window closed event
+    popupWindow.on('closed', () => {
+        // Remove the IPC listener when the popup is closed
+        ipcMain.removeAllListeners('keyword-submitted');
     });
 }
 
