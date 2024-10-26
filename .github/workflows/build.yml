@@ -117,14 +117,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ github.ref }}  # Use the tag name
-          release_name: Release ${{ github.ref }}  # Release name
-          files: |
-            dist/*.AppImage
-            dist/*.exe
-            dist/*.dmg
+      - name: Create GitHub Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}  # Use the GitHub token for authentication
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}  # Ensure GH_TOKEN is set
+        run: |
+          TAG_NAME="${{ github.ref }}"      # Get the full ref (e.g., 'refs/tags/v0.0.8')
+          TAG_NAME=${TAG_NAME#refs/tags/}   # Remove 'refs/tags/' prefix
+          set -x  # Enable verbose output
+          ls -la ./dist  # List files before creating the release
+          echo "Creating release with the following files:"
+          for file in ./dist/*; do
+            echo "$file"
+          done
+          gh release create "$TAG_NAME" \
+            --title "$TAG_NAME" \
+            --notes "Release for $TAG_NAME" \
+            ./dist/*
+    
