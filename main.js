@@ -119,8 +119,8 @@ function openPopup() {
     const htmlContent = `
         <html>
         <body>
-            <h2>Open URL</h2>
-            <input id="keyword" type="text" placeholder="Enter keyword (e.g., 'neos')">
+            <h2 style="color:blue">Open URL</h2>
+            <input id="keyword" type="text" placeholder="Schlüsselwort eingeben">
             <button id="submit">Submit</button>
             <script>
                 const { ipcRenderer } = require('electron');
