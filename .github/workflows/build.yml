@@ -3,7 +3,8 @@ name: Build Electron App
 on:
   push:
     tags:
-      - 'v*'  # This will trigger the workflow on any tag push
+      - 'v*'  # Trigger the workflow on any tag push
+  pull_request:  # Trigger the workflow on each PR
 
 env:
   GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}  # Set the GH_TOKEN globally
@@ -22,16 +23,13 @@ jobs:
           node-version: '18'
 
       - name: Clear NPM Cache
-        run: |
-          npm cache clean --force
+        run: npm cache clean --force
 
       - name: Install dependencies
-        run: |
-          npm install
+        run: npm install
 
       - name: Build Linux AppImage
-        run: |
-          npm run build:linux
+        run: npm run build:linux
 
       - name: Upload Linux AppImage
         uses: actions/upload-artifact@v4
@@ -55,16 +53,13 @@ jobs:
           node-version: '18'
 
       - name: Clear NPM Cache
-        run: |
-          npm cache clean --force
+        run: npm cache clean --force
 
       - name: Install dependencies
-        run: |
-          npm install
+        run: npm install
 
       - name: Build Windows Packages
-        run: |
-          npm run build:win
+        run: npm run build:win
 
       - name: Upload Windows Installer
         uses: actions/upload-artifact@v4
@@ -88,16 +83,13 @@ jobs:
           node-version: '18'
 
       - name: Clear NPM Cache
-        run: |
-          npm cache clean --force
+        run: npm cache clean --force
 
       - name: Install dependencies
-        run: |
-          npm install
+        run: npm install
 
       - name: Build macOS Packages
-        run: |
-          npm run build:mac
+        run: npm run build:mac
 
       - name: Upload macOS Package
         uses: actions/upload-artifact@v4
@@ -108,7 +100,9 @@ jobs:
       - name: List macOS dist directory
         run: ls -la dist  # List contents after building
 
+  # Conditional Release Creation on Tagged Push
   create-release:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     needs: [build-linux, build-windows, build-macos]
     runs-on: ubuntu-latest
 
