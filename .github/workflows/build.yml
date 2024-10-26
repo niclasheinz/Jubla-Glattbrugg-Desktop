@@ -3,13 +3,13 @@ name: Build Electron App
 on:
   push:
     tags:
-      - 'v*'  # Triggers the workflow on any tag push
+      - 'v*'
   pull_request:
   issue_comment:
-    types: [created]  # Triggers the workflow when a new comment is created on a PR
+    types: [created]
 
 env:
-  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}  # Set the GH_TOKEN globally
+  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
 jobs:
   build:
