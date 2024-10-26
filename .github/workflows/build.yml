@@ -3,27 +3,14 @@ name: Build Electron App
 on:
   push:
     tags:
-      - 'v*'
-  pull_request:
+      - 'v*'  # This will trigger the workflow on any tag push
   issue_comment:
-    types: [created]
-
-env:
-  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+    types: [created] # Trigger on comment creation
+    if: contains(github.event.comment.body, '/build')
 
 jobs:
-  build:
-    if: |
-      github.event_name == 'push' ||
-      github.event_name == 'pull_request' ||
-      (github.event_name == 'issue_comment' &&
-      github.event.issue.pull_request != null &&
-      contains(github.event.comment.body, '/build'))
+  build-linux:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -34,35 +21,94 @@ jobs:
           node-version: '18'
 
       - name: Clear NPM Cache
-        run: npm cache clean --force
+        run: |
+          npm cache clean --force
 
       - name: Install dependencies
-        run: npm install
-
-      - name: Build Electron App
         run: |
-          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-            npm run build:linux
-          elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            npm run build:win
-          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            npm run build:mac
-          fi
+          npm install
 
-      - name: Upload Artifact
+      - name: Build Linux AppImage
+        run: |
+          npm run build:linux
+
+      - name: Upload Linux AppImage
         uses: actions/upload-artifact@v4
         with:
-          name: jg-desktop-${{ matrix.os }}
-          path: |
-            dist/*.AppImage
-            dist/*.exe
-            dist/*.dmg
+          name: jg-desktop-linux
+          path: dist/*.AppImage
+
+      - name: List Linux dist directory
+        run: ls -la dist  # List contents after building
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Clear NPM Cache
+        run: |
+          npm cache clean --force
+
+      - name: Install dependencies
+        run: |
+          npm install
+
+      - name: Build Windows Packages
+        run: |
+          npm run build:win
+
+      - name: Upload Windows Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: jg-desktop-windows
+          path: dist/*.exe
+
+      - name: List Windows dist directory
+        run: dir dist  # List contents after building
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Clear NPM Cache
+        run: |
+          npm cache clean --force
+
+      - name: Install dependencies
+        run: |
+          npm install
+
+      - name: Build macOS Packages
+        run: |
+          npm run build:mac
+
+      - name: Upload macOS Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: jg-desktop-macos
+          path: dist/*.dmg
+
+      - name: List macOS dist directory
+        run: ls -la dist  # List contents after building
 
   create-release:
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-    needs: build
+    needs: [build-linux, build-windows, build-macos]
     runs-on: ubuntu-latest
-
+    if: github.event_name == 'push' && github.ref_type == 'tag'  # Only run on tags
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -70,29 +116,35 @@ jobs:
       - name: Download Linux AppImage
         uses: actions/download-artifact@v4
         with:
-          name: jg-desktop-ubuntu-latest
+          name: jg-desktop-linux
           path: ./dist
 
       - name: Download Windows Installer
         uses: actions/download-artifact@v4
         with:
-          name: jg-desktop-windows-latest
+          name: jg-desktop-windows
           path: ./dist
 
       - name: Download macOS Package
         uses: actions/download-artifact@v4
         with:
-          name: jg-desktop-macos-latest
+          name: jg-desktop-macos
           path: ./dist
 
       - name: List files in dist directory for debugging
-        run: ls -la ./dist
+        run: ls -la ./dist  # List contents of the dist directory
 
       - name: Create GitHub Release
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}  # Ensure GH_TOKEN is set
         run: |
-          TAG_NAME="${{ github.ref_name }}"
+          TAG_NAME="${{ github.ref_name }}"  # Get the tag name (e.g., 'refs/tags/v0.0.8')
+          set -x  # Enable verbose output
+          ls -la ./dist  # List files before creating the release
+          echo "Creating release with the following files:"
+          for file in ./dist/*; do
+            echo "$file"
+          done
           gh release create "$TAG_NAME" \
             --title "$TAG_NAME" \
             --notes "Release for $TAG_NAME" \
