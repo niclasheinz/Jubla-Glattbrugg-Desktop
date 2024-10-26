@@ -29,6 +29,9 @@
     "electron": "v33.0.1",
     "electron-builder": "v25.1.8"
   },
+  "dependencies": {
+    "dmg-license": "1.0.0"
+  },
   "build": {
     "appId": "ch.niclasheinz.jg-desktop",
     "productName": "Jubla Glattbrugg",
