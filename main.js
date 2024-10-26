@@ -46,7 +46,7 @@ function createMenu() {
                 {
                     label: 'Agenda',
                     click: () => {
-                        shell.openExternal(config.link_Agenda);
+                        shell.openExternal(config.url_Agenda);
                     }
                 }
             ]
@@ -86,7 +86,7 @@ function createMenu() {
                 {
                     label: 'Fehler melden',
                     click: () => {
-                        shell.openExternal('https://www.jublaglattbrugg.ch/desktop-fehler');
+                        shell.openExternal('config.url_help');
                     }
                 },
                 {
