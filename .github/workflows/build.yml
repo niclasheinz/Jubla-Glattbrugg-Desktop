@@ -121,7 +121,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}  # Ensure GH_TOKEN is set
         run: |
-          TAG_NAME="${{ github.ref }}"      # Get the full ref (e.g., 'refs/tags/v0.0.8')
+          TAG_NAME="${{ github.ref }}"      # Get the full ref (e.g., 'refs/tags/v0.0.9')
           TAG_NAME=${TAG_NAME#refs/tags/}   # Remove 'refs/tags/' prefix
           set -x  # Enable verbose output
           ls -la ./dist  # List files before creating the release
@@ -130,9 +130,11 @@ jobs:
           # Create or update the release if it doesn't exist
           if gh release view "$TAG_NAME"; then
             echo "Release $TAG_NAME exists. Updating..."
+            # Uploading files with --clobber to overwrite existing assets
             gh release upload "$TAG_NAME" ./dist/* --clobber
           else
             echo "Creating release $TAG_NAME..."
+            # Create a new release with --clobber to avoid conflicts
             gh release create "$TAG_NAME" \
               --title "$TAG_NAME" \
               --notes "Release for $TAG_NAME" \
