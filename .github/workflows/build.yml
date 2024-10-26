@@ -124,12 +124,13 @@ jobs:
           TAG_NAME="${{ github.ref }}"      # Get the full ref (e.g., 'refs/tags/v0.0.8')
           TAG_NAME=${TAG_NAME#refs/tags/}   # Remove 'refs/tags/' prefix
           set -x  # Enable verbose output
+          ls -la ./dist  # List files before creating the release
           echo "Creating release with the following files:"
-          for file in ./dist/*; do
-            echo "$file"
-          done
+          
+          # Create the release if it doesn't exist
           gh release create "$TAG_NAME" \
             --title "$TAG_NAME" \
             --notes "Release for $TAG_NAME" \
-            ./dist/*
-    
+            ./dist/* --clobber || echo "Assets may already exist, skipping upload."
+
+          # If the above fails due to existing files, you could handle it further if needed
