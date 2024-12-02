@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/niclasheinz/Jubla-Glattbrugg-Desktop#readme",
   "devDependencies": {
-    "electron": "v33.2.0",
+    "electron": "v33.2.1",
     "electron-builder": "v25.1.8"
   },
   "optionalDependencies": {
